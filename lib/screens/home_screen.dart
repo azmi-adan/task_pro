@@ -92,6 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
       .where((task) => task.priority == Priority.high && !task.isCompleted)
       .toList();
 
+  List<Task> get _mediumPriorityTasks => _tasks
+      .where((task) => task.priority == Priority.medium && !task.isCompleted)
+      .toList();
+
+  List<Task> get _lowPriorityTasks => _tasks
+      .where((task) => task.priority == Priority.low && !task.isCompleted)
+      .toList();
+
   void _onTaskToggle(Task task) {
     setState(() {
       final index = _tasks.indexWhere((t) => t.id == task.id);
@@ -197,6 +205,44 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildPrioritySection(String title, List<Task> tasks, Color color) {
+    if (tasks.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$title (${tasks.length})',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...tasks.map((task) => _buildTaskCard(task)).toList(),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
   Color _getPriorityColor(Priority priority) {
     switch (priority) {
       case Priority.high:
@@ -205,6 +251,17 @@ class _HomeScreenState extends State<HomeScreen> {
         return Colors.orange;
       case Priority.low:
         return Colors.green;
+    }
+  }
+
+  String _getPriorityText(Priority priority) {
+    switch (priority) {
+      case Priority.high:
+        return 'High Priority';
+      case Priority.medium:
+        return 'Medium Priority';
+      case Priority.low:
+        return 'Low Priority';
     }
   }
 
@@ -312,27 +369,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     return _buildTaskCard(_completedTasks[index]);
                   },
                 ),
-          // High Priority Tab
-          _highPriorityTasks.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.flag_outlined, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text(
-                        'No high priority tasks',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: _highPriorityTasks.length,
-                  itemBuilder: (context, index) {
-                    return _buildTaskCard(_highPriorityTasks[index]);
-                  },
+          // All Priorities Tab
+          Column(
+            children: [
+              // Stats Section for Priorities
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    _buildStatsCard('High', _highPriorityTasks.length, Colors.red),
+                    const SizedBox(width: 12),
+                    _buildStatsCard('Medium', _mediumPriorityTasks.length, Colors.orange),
+                    const SizedBox(width: 12),
+                    _buildStatsCard('Low', _lowPriorityTasks.length, Colors.green),
+                  ],
                 ),
+              ),
+              // Priority Sections
+              Expanded(
+                child: ListView(
+                  children: [
+                    _buildPrioritySection('High Priority', _highPriorityTasks, Colors.red),
+                    _buildPrioritySection('Medium Priority', _mediumPriorityTasks, Colors.orange),
+                    _buildPrioritySection('Low Priority', _lowPriorityTasks, Colors.green),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -354,8 +418,8 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Completed',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.flag),
-            label: 'High Priority',
+            icon: Icon(Icons.filter_list),
+            label: 'Priorities',
           ),
         ],
       ),
