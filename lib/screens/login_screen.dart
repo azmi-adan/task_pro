@@ -1,4 +1,3 @@
-// lib/screens/login_screen.dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
@@ -49,9 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
 
           // Semi-transparent overlay for better contrast
-          Container(
-            color: Colors.black.withOpacity(0.2),
-          ),
+          Container(color: Colors.black.withValues(alpha: 0.2)),
 
           // Content
           SafeArea(
@@ -72,11 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 90,
                             height: 90,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.white.withOpacity(0.3),
-                                  width: 1.5),
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 1.5,
+                              ),
                             ),
                             child: const Icon(
                               Icons.task_alt_rounded,
@@ -99,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             "Simplify. Organize. Achieve.",
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                             ),
                           ),
                         ],
@@ -117,10 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.2)),
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
                           ),
                           child: Form(
                             key: _formKey,
@@ -131,19 +130,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
                                     labelText: 'Email',
-                                    labelStyle:
-                                        const TextStyle(color: Colors.white70),
-                                    prefixIcon: const Icon(Icons.email,
-                                        color: Colors.white),
+                                    labelStyle: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.email,
+                                      color: Colors.white,
+                                    ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: Colors.white70),
+                                        color: Colors.white70,
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: Colors.white),
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                   validator: (value) {
@@ -163,10 +167,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
                                     labelText: 'Password',
-                                    labelStyle:
-                                        const TextStyle(color: Colors.white70),
-                                    prefixIcon: const Icon(Icons.lock,
-                                        color: Colors.white),
+                                    labelStyle: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.lock,
+                                      color: Colors.white,
+                                    ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         _obscurePassword
@@ -181,12 +188,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: Colors.white70),
+                                        color: Colors.white70,
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: Colors.white),
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                   validator: (value) {
@@ -211,8 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       backgroundColor: Colors.white,
                                       foregroundColor: Colors.indigo,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
                                     child: _isLoading
@@ -241,7 +249,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
-                                            'Password reset feature coming soon!'),
+                                          'Password reset feature coming soon!',
+                                        ),
                                       ),
                                     );
                                   },
@@ -270,7 +279,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Colors.white54),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                         ),

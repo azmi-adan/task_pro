@@ -161,7 +161,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: priorityColor.withOpacity(0.1),
+            color: priorityColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: priorityColor),
           ),
