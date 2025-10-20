@@ -159,12 +159,12 @@ By completing this project, learners will:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/taskpro_flutter_app.git
+   git clone https://github.com/azmi-adan/task_pro
    ```
 
 2. Navigate to the project directory:
    ```bash
-   cd taskpro_flutter_app
+   cd task_pro
    ```
 
 3. Install dependencies:
