@@ -78,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen>
         );
         return Transform.translate(
           offset: offset,
-          child: Icon(icon, color: Colors.white.withOpacity(0.6), size: size),
+          child: Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: size),
         );
       },
     );
@@ -113,10 +113,10 @@ class _SplashScreenState extends State<SplashScreen>
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                         ),

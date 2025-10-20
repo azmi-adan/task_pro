@@ -157,7 +157,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: priorityColor.withOpacity(0.2),
+            color: priorityColor.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(
