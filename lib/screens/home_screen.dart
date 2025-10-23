@@ -1,39 +1,121 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'task_detail_screen.dart';
+import 'login_screen.dart';
+import '../services/task_service.dart';
 
 class Task {
-  final String id;
+  final int id;
+  final int userId;
   final String title;
   final String description;
   final DateTime dueDate;
   final Priority priority;
   final bool isCompleted;
+  final DateTime createdAt;
 
   Task({
     required this.id,
+    required this.userId,
     required this.title,
     required this.description,
     required this.dueDate,
     required this.priority,
-    this.isCompleted = false,
+    required this.isCompleted,
+    required this.createdAt,
   });
 
+  factory Task.fromJson(Map<String, dynamic> json) {
+  print('🔍 Task.fromJson parsing:');
+  json.forEach((key, value) {
+    print('   $key: $value (type: ${value.runtimeType})');
+  });
+
+  DateTime safeParseDate(dynamic value, String fieldName) {
+    if (value == null) return DateTime.now();
+    final str = value.toString();
+    if (str.isEmpty || str == 'null') return DateTime.now();
+
+    try {
+      return DateTime.parse(str);
+    } catch (e) {
+      print('⚠️ Invalid date for $fieldName: $str');
+      return DateTime.now();
+    }
+  }
+
+  return Task(
+    id: _safeParseInt(json['id']),
+    userId: _safeParseInt(json['userId']),
+    title: json['title']?.toString() ?? '',
+    description: json['description']?.toString() ?? '',
+    dueDate: safeParseDate(json['dueDate'], 'dueDate'),
+    priority: _parsePriority(json['priority']?.toString() ?? 'medium'),
+    isCompleted: json['isCompleted'] is bool
+        ? json['isCompleted']
+        : json['isCompleted'] == 'true',
+    createdAt: safeParseDate(json['createdAt'], 'createdAt'),
+  );
+}
+
+
+static int _safeParseInt(dynamic value) {
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'title': title,
+      'description': description,
+      'dueDate': dueDate.toIso8601String(),
+      'priority': _priorityToString(priority),
+      'isCompleted': isCompleted,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  static Priority _parsePriority(String priority) {
+    switch (priority) {
+      case 'high': return Priority.high;
+      case 'medium': return Priority.medium;
+      case 'low': return Priority.low;
+      default: return Priority.medium;
+    }
+  }
+
+  static String _priorityToString(Priority priority) {
+    switch (priority) {
+      case Priority.high: return 'high';
+      case Priority.medium: return 'medium';
+      case Priority.low: return 'low';
+    }
+  }
+
   Task copyWith({
-    String? id,
+    int? id,
+    int? userId,
     String? title,
     String? description,
     DateTime? dueDate,
     Priority? priority,
     bool? isCompleted,
+    DateTime? createdAt,
   }) {
     return Task(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       title: title ?? this.title,
       description: description ?? this.description,
       dueDate: dueDate ?? this.dueDate,
       priority: priority ?? this.priority,
       isCompleted: isCompleted ?? this.isCompleted,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }
@@ -41,7 +123,9 @@ class Task {
 enum Priority { high, medium, low }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Map<String, dynamic> user;
+  
+  const HomeScreen({super.key, required this.user});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -49,42 +133,34 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  final List<Task> _tasks = [
-    Task(
-      id: '1',
-      title: 'Web Design Assignment',
-      description: 'Complete the responsive design project',
-      dueDate: DateTime.now().add(const Duration(days: 2)),
-      priority: Priority.high,
-    ),
-    Task(
-      id: '2',
-      title: 'Team Meeting',
-      description: 'Weekly team sync meeting',
-      dueDate: DateTime.now().add(const Duration(hours: 5)),
-      priority: Priority.medium,
-    ),
-    Task(
-      id: '3',
-      title: 'Buy Groceries',
-      description: 'Milk, Eggs, Bread, Fruits',
-      dueDate: DateTime.now().add(const Duration(days: 1)),
-      priority: Priority.low,
-    ),
-    Task(
-      id: '4',
-      title: 'Flutter Project Submission',
-      description: 'Submit the TaskPro app project',
-      dueDate: DateTime.now().add(const Duration(days: 7)),
-      priority: Priority.high,
-      isCompleted: true,
-    ),
-  ];
+  List<Task> _tasks = [];
+  bool _isLoading = true;
 
-  // Search related variables
+  
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   List<Task> _searchResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserTasks();
+  }
+
+Future<void> _loadUserTasks() async {
+  setState(() => _isLoading = true);
+
+  // ✅ Ensure userId is always an integer
+  final userId = int.tryParse(widget.user['id'].toString()) ?? widget.user['id'];
+
+  final tasksData = await TaskService.getUserTasks(userId);
+
+  setState(() {
+    _tasks = tasksData.map((taskJson) => Task.fromJson(taskJson)).toList();
+    _isLoading = false;
+  });
+}
+
 
   List<Task> get _pendingTasks =>
       _tasks.where((task) => !task.isCompleted).toList();
@@ -134,14 +210,34 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _onTaskToggle(Task task) {
-    setState(() {
-      final index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) {
-        _tasks[index] = task.copyWith(isCompleted: !task.isCompleted);
-      }
-    });
+ void _onTaskToggle(Task task) async {
+  print('🔄 Toggling task ${task.id} from ${task.isCompleted} to ${!task.isCompleted}');
+  
+  // Try the PATCH method first (simpler)
+  final int safeId = int.tryParse(task.id.toString()) ?? 0;
+var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
+
+  
+  // If PATCH fails, try the full PUT method
+  if (result['success'] == false) {
+    print('🔄 PATCH failed, trying full update...');
+    result = await TaskService.toggleTaskCompletion(task.id, !task.isCompleted);
   }
+
+  if (result['success'] == true) {
+    print('✅ Task toggled successfully');
+    await _loadUserTasks(); // Reload tasks from server
+  } else {
+    print('❌ Failed to toggle task: ${result['message']}');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result['message'] ?? 'Failed to update task'),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+} 
 
   void _onTaskTap(Task task) {
     Navigator.push(
@@ -149,35 +245,59 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
         builder: (context) => TaskDetailScreen(
           task: task,
-          onTaskUpdated: (updatedTask) {
-            setState(() {
-              final index = _tasks.indexWhere((t) => t.id == updatedTask.id);
-              if (index != -1) {
-                _tasks[index] = updatedTask;
-              }
-            });
-          },
+         userId: int.tryParse(widget.user['id'].toString()) ?? widget.user['id'],
+
+          onTaskUpdated: _loadUserTasks,
         ),
       ),
     );
   }
 
   void _addNewTask() async {
-    final newTask = await Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TaskDetailScreen(
           task: null,
-          onTaskUpdated: (task) => task,
+          userId: int.tryParse(widget.user['id'].toString()) ?? widget.user['id'],
+
+          onTaskUpdated: _loadUserTasks,
         ),
       ),
     );
 
-    if (newTask != null && newTask is Task) {
-      setState(() {
-        _tasks.add(newTask);
-      });
+    if (result == true) {
+      await _loadUserTasks(); // Reload tasks after adding new one
     }
+  }
+
+  void _logout() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (route) => false,
+                );
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildTaskCard(Task task) {
@@ -493,6 +613,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNormalContent() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     switch (_currentIndex) {
       case 0: // All Tasks Tab
         return Column(
@@ -637,12 +763,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: const TextStyle(fontSize: 16),
                 onChanged: _performSearch,
               )
-            : const Text(
-                'TaskPro',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 20,
-                ),
+            : Row(
+                children: [
+                  const Text(
+                    'TaskPro',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.logout, size: 20),
+                    onPressed: _logout,
+                    tooltip: 'Logout',
+                  ),
+                ],
               ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,

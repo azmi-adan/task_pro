@@ -1,0 +1,74 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "email": "demo@taskpro.com",
+      "password": "password",
+      "name": "Demo User",
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "2",
+      "email": "harar@gmail.com",
+      "password": "Harar@1972",
+      "name": "harar",
+      "createdAt": "2025-10-22T22:09:53.625"
+    },
+    {
+      "id": "3",
+      "email": "hafsa@gmail.com",
+      "password": "Hafsa@2007",
+      "name": "Hafsa Adan",
+      "createdAt": "2025-10-22T22:19:12.821"
+    }
+  ],
+  "tasks": [
+    {
+      "userId": 1,
+      "title": "Team Meeting",
+      "description": "Weekly team sync meeting",
+      "dueDate": "2024-12-20T14:00:00.000Z",
+      "priority": "medium",
+      "isCompleted": true,
+      "id": "2"
+    },
+    {
+      "userId": 1,
+      "title": "Buy Groceries",
+      "description": "Milk, Eggs, Bread, Fruits ,,,",
+      "dueDate": "2024-12-21T18:00:00.000Z",
+      "priority": "medium",
+      "isCompleted": true,
+      "id": "3"
+    },
+    {
+      "id": "4",
+      "userId": 2,
+      "title": "coding",
+      "description": "all about coding",
+      "dueDate": "2025-10-23T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "createdAt": "2025-10-22T22:10:18.187"
+    },
+    {
+      "userId": 3,
+      "title": "coding",
+      "description": "codingis",
+      "dueDate": "2025-10-22T22:56:42.769",
+      "priority": "medium",
+      "isCompleted": true,
+      "id": "5"
+    },
+    {
+      "id": 6,
+      "userId": 1,
+      "title": "coding ",
+      "description": "all about coding",
+      "dueDate": "2025-10-29T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "createdAt": "2025-10-23T10:44:10.241"
+    }
+  ]
+}

@@ -1,14 +1,17 @@
-// lib/screens/task_detail_screen.dart
+// lib/screens/task_detail_screen.dart - FIXED VERSION
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import '../services/task_service.dart';
+import '../screens/home_screen.dart';
 
 class TaskDetailScreen extends StatefulWidget {
   final Task? task;
-  final Function(Task) onTaskUpdated;
+  final int userId;
+  final Function onTaskUpdated;
 
   const TaskDetailScreen({
     super.key,
     required this.task,
+    required this.userId,
     required this.onTaskUpdated,
   });
 
@@ -23,6 +26,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   DateTime _selectedDate = DateTime.now();
   Priority _selectedPriority = Priority.medium;
   bool _isEditing = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -51,23 +55,58 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
-  void _saveTask() {
-    if (_formKey.currentState!.validate()) {
-      final task = Task(
-        id: widget.task?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        title: _titleController.text,
-        description: _descriptionController.text,
-        dueDate: _selectedDate,
-        priority: _selectedPriority,
-        isCompleted: widget.task?.isCompleted ?? false,
-      );
+  // SAFE ID PARSING - FIXED
+  dynamic _parseTaskId(dynamic taskId) {
+    print('🔧 Parsing task ID: $taskId (type: ${taskId.runtimeType})');
+    if (taskId is int) return taskId;
+    if (taskId is String) {
+      final parsed = int.tryParse(taskId);
+      return parsed ?? taskId; // Return original if parsing fails
+    }
+    return taskId;
+  }
 
-      widget.onTaskUpdated(task);
-      Navigator.pop(context, task);
+  Future<void> _saveTask() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+
+      final taskData = {
+        'userId': widget.userId, // Already an int
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'dueDate': _selectedDate.toIso8601String(),
+        'priority': _priorityToString(_selectedPriority),
+        'isCompleted': widget.task?.isCompleted ?? false,
+      };
+
+      Map<String, dynamic> result;
+      if (widget.task == null) {
+        // Create new task
+        result = await TaskService.createTask(taskData);
+      } else {
+        // Update existing task - USE SAFE PARSING
+        final safeId = _parseTaskId(widget.task!.id);
+        print('🔄 Updating task with ID: $safeId (type: ${safeId.runtimeType})');
+        result = await TaskService.updateTask(safeId, taskData);
+      }
+
+      setState(() => _isLoading = false);
+
+      if (result['success'] == true) {
+        widget.onTaskUpdated();
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Failed to save task'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  void _deleteTask() {
+  Future<void> _deleteTask() async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -80,12 +119,31 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Go back
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Task deleted')),
-                );
+                setState(() => _isLoading = true);
+
+                // USE SAFE PARSING
+                final safeId = _parseTaskId(widget.task!.id);
+                print('🗑️ Deleting task with ID: $safeId (type: ${safeId.runtimeType})');
+                final result = await TaskService.deleteTask(safeId);
+                
+                setState(() => _isLoading = false);
+
+                if (result['success'] == true) {
+                  widget.onTaskUpdated();
+                  Navigator.pop(context); // Go back to home
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Task deleted successfully')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(result['message'] ?? 'Failed to delete task'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               style: TextButton.styleFrom(foregroundColor: Colors.red),
               child: const Text('Delete'),
@@ -96,13 +154,37 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
-  void _toggleCompletion() {
-    if (widget.task != null) {
-      final updatedTask = widget.task!.copyWith(
-        isCompleted: !widget.task!.isCompleted,
-      );
-      widget.onTaskUpdated(updatedTask);
+  Future<void> _toggleCompletion() async {
+    setState(() => _isLoading = true);
+
+    // USE SAFE PARSING
+    final safeId = _parseTaskId(widget.task!.id);
+    print('🔄 Toggling task with ID: $safeId (type: ${safeId.runtimeType})');
+    final result = await TaskService.toggleTaskCompletion(
+      safeId, 
+      !widget.task!.isCompleted,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      widget.onTaskUpdated();
       Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Failed to update task'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  String _priorityToString(Priority priority) {
+    switch (priority) {
+      case Priority.high: return 'high';
+      case Priority.medium: return 'medium';
+      case Priority.low: return 'low';
     }
   }
 
@@ -121,31 +203,35 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             ),
           if (_isEditing || isNewTask)
             IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: _saveTask,
+              icon: _isLoading 
+                  ? const CircularProgressIndicator()
+                  : const Icon(Icons.save),
+              onPressed: _isLoading ? null : _saveTask,
             ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!_isEditing && !isNewTask) ...[
-                // View Mode
-                _buildDetailSection(),
-                const SizedBox(height: 24),
-                _buildActionButtons(),
-              ] else ...[
-                // Edit Mode
-                _buildEditForm(),
-              ],
-            ],
-          ),
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!_isEditing && !isNewTask) ...[
+                      // View Mode
+                      _buildDetailSection(),
+                      const SizedBox(height: 24),
+                      _buildActionButtons(),
+                    ] else ...[
+                      // Edit Mode
+                      _buildEditForm(),
+                    ],
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -267,7 +353,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: _toggleCompletion,
+            onPressed: _isLoading ? null : _toggleCompletion,
             icon: Icon(
               widget.task!.isCompleted ? Icons.refresh : Icons.check_circle,
             ),
@@ -285,7 +371,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            onPressed: _deleteTask,
+            onPressed: _isLoading ? null : _deleteTask,
             icon: const Icon(Icons.delete, color: Colors.red),
             label: const Text(
               'Delete Task',
@@ -389,17 +475,19 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           width: double.infinity,
           height: 50,
           child: ElevatedButton(
-            onPressed: _saveTask,
+            onPressed: _isLoading ? null : _saveTask,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
-              'Save Task',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text(
+                    'Save Task',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
           ),
         ),
         if (!_isEditing && widget.task != null) ...[
