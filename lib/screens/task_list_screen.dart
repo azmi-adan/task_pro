@@ -1,16 +1,19 @@
 // lib/screens/task_list_screen.dart
 import 'package:flutter/material.dart';
 import 'task_detail_screen.dart';
-import 'home_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
   final List<Task> tasks;
   final String title;
+  final Map<String, dynamic> user;
+  final Function onTaskUpdated;
 
   const TaskListScreen({
     super.key,
     required this.tasks,
     required this.title,
+    required this.user,
+    required this.onTaskUpdated,
   });
 
   @override
@@ -19,12 +22,22 @@ class TaskListScreen extends StatefulWidget {
 
 class _TaskListScreenState extends State<TaskListScreen> {
   List<Task> get _filteredTasks {
-    if (_searchQuery.isEmpty) return widget.tasks;
+    List<Task> filtered = widget.tasks;
     
-    return widget.tasks.where((task) {
-      return task.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          task.description.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((task) {
+        return task.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            task.description.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+    
+    // Apply priority filter
+    if (_selectedPriority != null) {
+      filtered = filtered.where((task) => task.priority == _selectedPriority).toList();
+    }
+    
+    return filtered;
   }
 
   final TextEditingController _searchController = TextEditingController();
@@ -40,11 +53,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
           IconButton(
             icon: const Icon(Icons.home),
             onPressed: () {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                (route) => false,
-              );
+              Navigator.pop(context);
             },
           ),
         ],
@@ -168,8 +177,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
         ),
         title: Text(
           task.title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w500,
+            decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+            color: task.isCompleted ? Colors.grey : Colors.black,
           ),
         ),
         subtitle: Column(
@@ -179,6 +190,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
               task.description,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                color: task.isCompleted ? Colors.grey : Colors.grey.shade600,
+              ),
             ),
             const SizedBox(height: 4),
             Row(
@@ -186,7 +201,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 Icon(
                   Icons.calendar_today,
                   size: 12,
-                  color: Colors.grey.shade600,
+                  color: isDueSoon ? Colors.red : Colors.grey.shade600,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -210,9 +225,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
             MaterialPageRoute(
               builder: (context) => TaskDetailScreen(
                 task: task,
-                onTaskUpdated: (updatedTask) {
-                  // Handle task updates if needed
-                },
+                userId: widget.user['id'],
+                onTaskUpdated: widget.onTaskUpdated,
               ),
             ),
           );
