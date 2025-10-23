@@ -25,15 +25,6 @@
   "tasks": [
     {
       "userId": 1,
-      "title": "Web Design Assignment",
-      "description": "Complete the responsive design project",
-      "dueDate": "2024-12-24T10:00:00.000Z",
-      "priority": "low",
-      "isCompleted": false,
-      "id": "1"
-    },
-    {
-      "userId": 1,
       "title": "Team Meeting",
       "description": "Weekly team sync meeting",
       "dueDate": "2024-12-20T14:00:00.000Z",
@@ -47,7 +38,7 @@
       "description": "Milk, Eggs, Bread, Fruits ,,,",
       "dueDate": "2024-12-21T18:00:00.000Z",
       "priority": "medium",
-      "isCompleted": false,
+      "isCompleted": true,
       "id": "3"
     },
     {
@@ -72,12 +63,12 @@
     {
       "id": 6,
       "userId": 1,
-      "title": "coding",
+      "title": "coding ",
       "description": "all about coding",
-      "dueDate": "2025-10-30T00:00:00.000",
-      "priority": "medium",
+      "dueDate": "2025-10-29T00:00:00.000",
+      "priority": "high",
       "isCompleted": false,
-      "createdAt": "2025-10-23T09:43:09.475"
+      "createdAt": "2025-10-23T10:44:10.241"
     }
   ]
 }
