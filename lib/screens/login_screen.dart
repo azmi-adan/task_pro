@@ -347,16 +347,6 @@ Navigator.pushReplacement(
                                 ),
                                 const SizedBox(height: 16),
 
-<<<<<<< HEAD
-                                // Forgot password link
-                                TextButton(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Password reset feature coming soon!',
-                                        ),
-=======
                                 // Divider
                                 Row(
                                   children: [
@@ -364,7 +354,6 @@ Navigator.pushReplacement(
                                       child: Divider(
                                         color: Colors.white.withOpacity(0.3),
                                         thickness: 1,
->>>>>>> azmi-dev
                                       ),
                                     ),
                                     Padding(
@@ -422,24 +411,6 @@ Navigator.pushReplacement(
 
                     const SizedBox(height: 30),
 
-<<<<<<< HEAD
-                    // Demo login section
-                    TextButton(
-                      onPressed: () {
-                        _emailController.text = 'demo@taskpro.com';
-                        _passwordController.text = 'password';
-                        _login();
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white54),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-=======
                     // Sign up section
                     Container(
                       padding: const EdgeInsets.all(20),
@@ -448,7 +419,6 @@ Navigator.pushReplacement(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.white.withOpacity(0.2),
->>>>>>> azmi-dev
                         ),
                       ),
                       child: Row(
