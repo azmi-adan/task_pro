@@ -67,8 +67,18 @@
       "description": "all about coding",
       "dueDate": "2025-10-29T00:00:00.000",
       "priority": "high",
-      "isCompleted": false,
+      "isCompleted": true,
       "createdAt": "2025-10-23T10:44:10.241"
+    },
+    {
+      "id": 7,
+      "userId": 1,
+      "title": "coding",
+      "description": "coding",
+      "dueDate": "2025-10-25T21:00:38.902",
+      "priority": "medium",
+      "isCompleted": false,
+      "createdAt": "2025-10-25T21:01:49.876"
     }
   ]
 }
