@@ -20,26 +20,45 @@
       "password": "Hafsa@2007",
       "name": "Hafsa Adan",
       "createdAt": "2025-10-22T22:19:12.821"
+    },
+    {
+      "id": "4",
+      "email": "azmi@gmail.com",
+      "password": "Azmi@2005",
+      "name": "Azmi",
+      "createdAt": "2025-10-27T13:34:09.109"
+    },
+    {
+      "id": "5",
+      "email": "ann@gmail.com",
+      "password": "Azmi@2005",
+      "name": "Ann",
+      "createdAt": "2025-10-27T13:40:29.415"
+    },
+    {
+      "id": "6",
+      "email": "nuseiba@gmail.com",
+      "password": "Nuseiba@2018",
+      "name": "Nuseiba",
+      "createdAt": "2025-10-31T20:08:28.849"
+    },
+    {
+      "id": 7,
+      "email": "task@gmail.com",
+      "password": "task@2006",
+      "name": "task",
+      "createdAt": "2025-10-31T21:10:46.333"
     }
   ],
   "tasks": [
     {
       "userId": 1,
       "title": "Team Meeting",
-      "description": "Weekly team sync meeting",
+      "description": "Weekly team sync meeting decided by members",
       "dueDate": "2024-12-20T14:00:00.000Z",
       "priority": "medium",
       "isCompleted": true,
       "id": "2"
-    },
-    {
-      "userId": 1,
-      "title": "Buy Groceries",
-      "description": "Milk, Eggs, Bread, Fruits ,,,",
-      "dueDate": "2024-12-21T18:00:00.000Z",
-      "priority": "medium",
-      "isCompleted": true,
-      "id": "3"
     },
     {
       "id": "4",
@@ -61,24 +80,160 @@
       "id": "5"
     },
     {
-      "id": "6",
-      "userId": 1,
-      "title": "coding ",
-      "description": "all about coding",
-      "dueDate": "2025-10-29T00:00:00.000",
+      "id": "8",
+      "userId": 5,
+      "title": "web design",
+      "description": "all about web design",
+      "dueDate": "2025-10-28T00:00:00.000",
       "priority": "high",
       "isCompleted": true,
-      "createdAt": "2025-10-23T10:44:10.241"
+      "createdAt": "2025-10-27T13:40:54.171"
     },
     {
-      "id": 7,
+      "id": "9",
+      "userId": 3,
+      "title": "web design3",
+      "description": "web design",
+      "dueDate": "2025-10-31T00:00:00.000",
+      "priority": "medium",
+      "isCompleted": true,
+      "createdAt": "2025-10-27T13:45:26.488"
+    },
+    {
+      "id": "10",
+      "userId": 4,
+      "title": "flutter development",
+      "description": "flutter development",
+      "dueDate": "2025-10-30T00:00:00.000",
+      "priority": "high",
+      "isCompleted": true,
+      "createdAt": "2025-10-27T13:49:10.692"
+    },
+    {
+      "userId": 4,
+      "title": "laundry",
+      "description": "clothes",
+      "dueDate": "2025-10-28T00:00:00.000",
+      "priority": "low",
+      "isCompleted": true,
+      "id": "12"
+    },
+    {
+      "userId": 4,
+      "title": "web design3 ",
+      "description": "all about web",
+      "dueDate": "2025-10-30T00:00:00.000",
+      "priority": "high",
+      "isCompleted": true,
+      "id": "13"
+    },
+    {
+      "id": "14",
+      "userId": 4,
+      "title": "coding2 ",
+      "description": "all about coding",
+      "dueDate": "2025-10-31T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "createdAt": "2025-10-27T14:12:31.559"
+    },
+    {
       "userId": 1,
-      "title": "coding",
-      "description": "coding",
-      "dueDate": "2025-10-25T21:00:38.902",
+      "title": "web design3",
+      "description": "web design   hjkl;",
+      "dueDate": "2025-10-31T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "id": "16"
+    },
+    {
+      "id": "17",
+      "userId": 1,
+      "title": "completing assignments",
+      "description": "completing assignments",
+      "dueDate": "2025-10-31T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "createdAt": "2025-10-27T18:58:44.869"
+    },
+    {
+      "id": "18",
+      "userId": 1,
+      "title": "CODING IN PYTHON",
+      "description": "CODING IN PYTHON",
+      "dueDate": "2025-10-31T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "createdAt": "2025-10-27T19:04:49.332"
+    },
+    {
+      "id": "19",
+      "userId": 3,
+      "title": "python development",
+      "description": "all about python development",
+      "dueDate": "2025-10-31T18:18:28.274",
+      "priority": "low",
+      "isCompleted": true,
+      "createdAt": "2025-10-31T18:18:57.406"
+    },
+    {
+      "id": "20",
+      "userId": 1,
+      "title": "test",
+      "description": "test",
+      "dueDate": "2025-10-31T18:32:04.202",
+      "priority": "medium",
+      "isCompleted": true,
+      "createdAt": "2025-10-31T18:32:11.966"
+    },
+    {
+      "id": "21",
+      "userId": 1,
+      "title": "test2",
+      "description": "test2",
+      "dueDate": "2025-10-31T18:35:41.185",
+      "priority": "medium",
+      "isCompleted": true,
+      "createdAt": "2025-10-31T18:37:22.139"
+    },
+    {
+      "id": "22",
+      "userId": 1,
+      "title": "test2",
+      "description": "test2",
+      "dueDate": "2025-10-31T18:37:13.892",
+      "priority": "low",
+      "isCompleted": false,
+      "createdAt": "2025-10-31T18:37:34.511"
+    },
+    {
+      "id": "23",
+      "userId": "3",
+      "title": "test5",
+      "description": "test5",
+      "dueDate": "2025-10-31T20:06:54.704",
+      "priority": "medium",
+      "isCompleted": true,
+      "createdAt": "2025-10-31T20:07:04.415"
+    },
+    {
+      "userId": 6,
+      "title": "code ",
+      "description": "code hb",
+      "dueDate": "2025-10-31T20:09:04.769",
       "priority": "medium",
       "isCompleted": false,
-      "createdAt": "2025-10-25T21:01:49.876"
+      "id": "24"
+    },
+    {
+      "id": "25",
+      "userId": "1",
+      "title": "test",
+      "description": "test",
+      "dueDate": "2025-10-31T21:08:59.228",
+      "priority": "medium",
+      "isCompleted": true,
+      "createdAt": "2025-10-31T21:09:07.524"
     }
   ]
 }

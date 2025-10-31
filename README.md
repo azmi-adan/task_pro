@@ -291,6 +291,22 @@ Run `flutter pub get` after adding dependencies.
 
 ---
 
+## 🏁 Week 4 Final Updates
+
+### ✅ Key Improvements
+- Fixed all backend issues related to task ID type conflicts.
+- Implemented stable CRUD functionality for tasks.
+- Enhanced UI consistency and navigation flow.
+- Added loading indicators and success/error feedback.
+- Improved validation in all forms (Login, Signup, Task Form).
+
+### 🧩 Optional Feature Added
+- Added a **Feedback Form** screen to collect user comments and suggestions.
+
+### 📹 Demo Video
+🎥 Watch the short app walkthrough: [Demo video : https://drive.google.com/file/d/1zZbvcTu-wJVWoaryNBvp1Q5hRqQQ3Utk/view?usp=sharing](#)
+
+
 
 ## 💻 GitHub Repository Setup
 

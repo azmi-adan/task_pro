@@ -1,4 +1,4 @@
-// lib/screens/task_detail_screen.dart - FIXED VERSION
+// lib/screens/task_detail_screen.dart - FINAL FIXED VERSION
 import 'package:flutter/material.dart';
 import '../services/task_service.dart';
 import '../screens/home_screen.dart';
@@ -27,15 +27,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Priority _selectedPriority = Priority.medium;
   bool _isEditing = false;
   bool _isLoading = false;
+  Task? _task; // ✅ Mutable local copy of the task
 
   @override
   void initState() {
     super.initState();
-    if (widget.task != null) {
-      _titleController.text = widget.task!.title;
-      _descriptionController.text = widget.task!.description;
-      _selectedDate = widget.task!.dueDate;
-      _selectedPriority = widget.task!.priority;
+    _task = widget.task; // make a mutable copy
+
+    if (_task != null) {
+      _titleController.text = _task!.title;
+      _descriptionController.text = _task!.description;
+      _selectedDate = _task!.dueDate;
+      _selectedPriority = _task!.priority;
     } else {
       _isEditing = true;
     }
@@ -55,13 +58,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
-  // SAFE ID PARSING - FIXED
   dynamic _parseTaskId(dynamic taskId) {
     print('🔧 Parsing task ID: $taskId (type: ${taskId.runtimeType})');
     if (taskId is int) return taskId;
     if (taskId is String) {
       final parsed = int.tryParse(taskId);
-      return parsed ?? taskId; // Return original if parsing fails
+      return parsed ?? taskId;
     }
     return taskId;
   }
@@ -71,22 +73,27 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       setState(() => _isLoading = true);
 
       final taskData = {
-        'userId': widget.userId, // Already an int
+        'userId': widget.userId,
         'title': _titleController.text,
         'description': _descriptionController.text,
         'dueDate': _selectedDate.toIso8601String(),
         'priority': _priorityToString(_selectedPriority),
-        'isCompleted': widget.task?.isCompleted ?? false,
+        'isCompleted': _task?.isCompleted ?? false,
       };
 
       Map<String, dynamic> result;
-      if (widget.task == null) {
-        // Create new task
+
+      if (_task == null) {
+        // ✅ Create new task
         result = await TaskService.createTask(taskData);
+        if (result['success'] == true && result['data'] != null) {
+          setState(() {
+            _task = Task.fromJson(result['data']); // ✅ FIX
+          });
+        }
       } else {
-        // Update existing task - USE SAFE PARSING
-        final safeId = _parseTaskId(widget.task!.id);
-        print('🔄 Updating task with ID: $safeId (type: ${safeId.runtimeType})');
+        // ✅ Update existing task
+        final safeId = _parseTaskId(_task!.id);
         result = await TaskService.updateTask(safeId, taskData);
       }
 
@@ -107,6 +114,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Future<void> _deleteTask() async {
+    if (_task == null) return;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -120,19 +128,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             ),
             TextButton(
               onPressed: () async {
-                Navigator.pop(context); // Close dialog
+                Navigator.pop(context);
                 setState(() => _isLoading = true);
 
-                // USE SAFE PARSING
-                final safeId = _parseTaskId(widget.task!.id);
+                final safeId = _parseTaskId(_task!.id);
                 print('🗑️ Deleting task with ID: $safeId (type: ${safeId.runtimeType})');
                 final result = await TaskService.deleteTask(safeId);
-                
+
                 setState(() => _isLoading = false);
 
                 if (result['success'] == true) {
                   widget.onTaskUpdated();
-                  Navigator.pop(context); // Go back to home
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Task deleted successfully')),
                   );
@@ -154,43 +161,50 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
-  Future<void> _toggleCompletion() async {
-    setState(() => _isLoading = true);
+  
+Future<void> _toggleCompletion() async {
+  if (_task == null) return;
+  setState(() => _isLoading = true);
 
-    // USE SAFE PARSING
-    final safeId = _parseTaskId(widget.task!.id);
-    print('🔄 Toggling task with ID: $safeId (type: ${safeId.runtimeType})');
-    final result = await TaskService.toggleTaskCompletion(
-      safeId, 
-      !widget.task!.isCompleted,
+  final safeId = _parseTaskId(_task!.id);
+  final result = await TaskService.toggleTaskCompletion(
+    safeId,
+    !_task!.isCompleted,
+  );
+
+  setState(() => _isLoading = false);
+
+  // ✅ FIX HERE: result['task'] instead of result['data']
+  if (result['success'] == true && result['task'] != null) {
+    setState(() {
+      _task = Task.fromJson(result['task']); // ✅ updated
+    });
+    widget.onTaskUpdated();
+    Navigator.pop(context);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result['message'] ?? 'Failed to update task'),
+        backgroundColor: Colors.red,
+      ),
     );
-
-    setState(() => _isLoading = false);
-
-    if (result['success'] == true) {
-      widget.onTaskUpdated();
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Failed to update task'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
+}
 
   String _priorityToString(Priority priority) {
     switch (priority) {
-      case Priority.high: return 'high';
-      case Priority.medium: return 'medium';
-      case Priority.low: return 'low';
+      case Priority.high:
+        return 'high';
+      case Priority.medium:
+        return 'medium';
+      case Priority.low:
+        return 'low';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isNewTask = widget.task == null;
+    final isNewTask = _task == null;
 
     return Scaffold(
       appBar: AppBar(
@@ -203,7 +217,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             ),
           if (_isEditing || isNewTask)
             IconButton(
-              icon: _isLoading 
+              icon: _isLoading
                   ? const CircularProgressIndicator()
                   : const Icon(Icons.save),
               onPressed: _isLoading ? null : _saveTask,
@@ -220,12 +234,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!_isEditing && !isNewTask) ...[
-                      // View Mode
                       _buildDetailSection(),
                       const SizedBox(height: 24),
                       _buildActionButtons(),
                     ] else ...[
-                      // Edit Mode
                       _buildEditForm(),
                     ],
                   ],
@@ -236,18 +248,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Widget _buildDetailSection() {
-    final task = widget.task!;
+    final task = _task!;
     final priorityColor = _getPriorityColor(task.priority);
     final isDueSoon = task.dueDate.difference(DateTime.now()).inDays <= 1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Priority Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: priorityColor.withValues(alpha: 0.1),
+            color: priorityColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: priorityColor),
           ),
@@ -271,16 +282,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        // Title
         Text(
           task.title,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        // Description
         Text(
           'Description',
           style: TextStyle(
@@ -290,29 +296,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          task.description,
-          style: const TextStyle(fontSize: 16),
-        ),
+        Text(task.description, style: const TextStyle(fontSize: 16)),
         const SizedBox(height: 24),
-        // Due Date
         Row(
           children: [
-            Icon(
-              Icons.calendar_today,
-              color: Colors.grey.shade600,
-            ),
+            Icon(Icons.calendar_today, color: Colors.grey.shade600),
             const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Due Date',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
-                  ),
-                ),
+                Text('Due Date',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
                 Text(
                   _formatDate(task.dueDate),
                   style: TextStyle(
@@ -326,7 +320,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        // Status
         Row(
           children: [
             Icon(
@@ -354,14 +347,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: _isLoading ? null : _toggleCompletion,
-            icon: Icon(
-              widget.task!.isCompleted ? Icons.refresh : Icons.check_circle,
-            ),
+            icon: Icon(_task!.isCompleted ? Icons.refresh : Icons.check_circle),
             label: Text(
-              widget.task!.isCompleted ? 'Mark as Pending' : 'Mark as Completed',
+              _task!.isCompleted ? 'Mark as Pending' : 'Mark as Completed',
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.task!.isCompleted ? Colors.orange : Colors.green,
+              backgroundColor:
+                  _task!.isCompleted ? Colors.orange : Colors.green,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
@@ -396,12 +388,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             labelText: 'Task Title',
             border: OutlineInputBorder(),
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a task title';
-            }
-            return null;
-          },
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Please enter a task title' : null,
         ),
         const SizedBox(height: 16),
         TextFormField(
@@ -412,15 +400,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             alignLabelWithHint: true,
           ),
           maxLines: 4,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a task description';
-            }
-            return null;
-          },
+          validator: (value) => value == null || value.isEmpty
+              ? 'Please enter a task description'
+              : null,
         ),
         const SizedBox(height: 16),
-        // Due Date Picker
         InkWell(
           onTap: () => _selectDate(context),
           child: InputDecorator(
@@ -438,7 +422,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        // Priority Selector
         InputDecorator(
           decoration: const InputDecoration(
             labelText: 'Priority',
@@ -484,22 +467,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             ),
             child: _isLoading
                 ? const CircularProgressIndicator(color: Colors.white)
-                : const Text(
-                    'Save Task',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                : const Text('Save Task',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
         ),
-        if (!_isEditing && widget.task != null) ...[
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () => setState(() => _isEditing = false),
-              child: const Text('Cancel'),
-            ),
-          ),
-        ],
       ],
     );
   }
