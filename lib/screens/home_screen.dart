@@ -1,7 +1,5 @@
-// lib/screens/home_screen.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'task_detail_screen.dart';
 import 'login_screen.dart';
 import '../services/task_service.dart';
@@ -28,44 +26,49 @@ class Task {
   });
 
   factory Task.fromJson(Map<String, dynamic> json) {
-  print('🔍 Task.fromJson parsing:');
-  json.forEach((key, value) {
-    print('   $key: $value (type: ${value.runtimeType})');
-  });
-
-  DateTime safeParseDate(dynamic value, String fieldName) {
-    if (value == null) return DateTime.now();
-    final str = value.toString();
-    if (str.isEmpty || str == 'null') return DateTime.now();
-
-    try {
-      return DateTime.parse(str);
-    } catch (e) {
-      print('⚠️ Invalid date for $fieldName: $str');
-      return DateTime.now();
+    if (kDebugMode) {
+      print('🔍 Task.fromJson parsing:');
     }
+    json.forEach((key, value) {
+      if (kDebugMode) {
+        print('   $key: $value (type: ${value.runtimeType})');
+      }
+    });
+
+    DateTime safeParseDate(dynamic value, String fieldName) {
+      if (value == null) return DateTime.now();
+      final str = value.toString();
+      if (str.isEmpty || str == 'null') return DateTime.now();
+
+      try {
+        return DateTime.parse(str);
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ Invalid date for $fieldName: $str');
+        }
+        return DateTime.now();
+      }
+    }
+
+    return Task(
+      id: _safeParseInt(json['id']),
+      userId: _safeParseInt(json['userId']),
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      dueDate: safeParseDate(json['dueDate'], 'dueDate'),
+      priority: _parsePriority(json['priority']?.toString() ?? 'medium'),
+      isCompleted: json['isCompleted'] is bool
+          ? json['isCompleted']
+          : json['isCompleted'] == 'true',
+      createdAt: safeParseDate(json['createdAt'], 'createdAt'),
+    );
   }
 
-  return Task(
-    id: _safeParseInt(json['id']),
-    userId: _safeParseInt(json['userId']),
-    title: json['title']?.toString() ?? '',
-    description: json['description']?.toString() ?? '',
-    dueDate: safeParseDate(json['dueDate'], 'dueDate'),
-    priority: _parsePriority(json['priority']?.toString() ?? 'medium'),
-    isCompleted: json['isCompleted'] is bool
-        ? json['isCompleted']
-        : json['isCompleted'] == 'true',
-    createdAt: safeParseDate(json['createdAt'], 'createdAt'),
-  );
-}
-
-
-static int _safeParseInt(dynamic value) {
-  if (value is int) return value;
-  if (value is String) return int.tryParse(value) ?? 0;
-  return 0;
-}
+  static int _safeParseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -82,18 +85,25 @@ static int _safeParseInt(dynamic value) {
 
   static Priority _parsePriority(String priority) {
     switch (priority) {
-      case 'high': return Priority.high;
-      case 'medium': return Priority.medium;
-      case 'low': return Priority.low;
-      default: return Priority.medium;
+      case 'high':
+        return Priority.high;
+      case 'medium':
+        return Priority.medium;
+      case 'low':
+        return Priority.low;
+      default:
+        return Priority.medium;
     }
   }
 
   static String _priorityToString(Priority priority) {
     switch (priority) {
-      case Priority.high: return 'high';
-      case Priority.medium: return 'medium';
-      case Priority.low: return 'low';
+      case Priority.high:
+        return 'high';
+      case Priority.medium:
+        return 'medium';
+      case Priority.low:
+        return 'low';
     }
   }
 
@@ -124,7 +134,7 @@ enum Priority { high, medium, low }
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic> user;
-  
+
   const HomeScreen({super.key, required this.user});
 
   @override
@@ -136,7 +146,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Task> _tasks = [];
   bool _isLoading = true;
 
-  
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
   List<Task> _searchResults = [];
@@ -147,20 +156,20 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserTasks();
   }
 
-Future<void> _loadUserTasks() async {
-  setState(() => _isLoading = true);
+  Future<void> _loadUserTasks() async {
+    setState(() => _isLoading = true);
 
-  // ✅ Ensure userId is always an integer
-  final userId = int.tryParse(widget.user['id'].toString()) ?? widget.user['id'];
+    // ✅ Ensure userId is always an integer
+    final userId =
+        int.tryParse(widget.user['id'].toString()) ?? widget.user['id'];
 
-  final tasksData = await TaskService.getUserTasks(userId);
+    final tasksData = await TaskService.getUserTasks(userId);
 
-  setState(() {
-    _tasks = tasksData.map((taskJson) => Task.fromJson(taskJson)).toList();
-    _isLoading = false;
-  });
-}
-
+    setState(() {
+      _tasks = tasksData.map((taskJson) => Task.fromJson(taskJson)).toList();
+      _isLoading = false;
+    });
+  }
 
   List<Task> get _pendingTasks =>
       _tasks.where((task) => !task.isCompleted).toList();
@@ -193,10 +202,16 @@ Future<void> _loadUserTasks() async {
     setState(() {
       _isSearching = true;
       _searchResults = _tasks.where((task) {
-        final titleMatch = task.title.toLowerCase().contains(query.toLowerCase());
-        final descriptionMatch = task.description.toLowerCase().contains(query.toLowerCase());
-        final priorityMatch = _getPriorityText(task.priority).toLowerCase().contains(query.toLowerCase());
-        
+        final titleMatch = task.title.toLowerCase().contains(
+          query.toLowerCase(),
+        );
+        final descriptionMatch = task.description.toLowerCase().contains(
+          query.toLowerCase(),
+        );
+        final priorityMatch = _getPriorityText(
+          task.priority,
+        ).toLowerCase().contains(query.toLowerCase());
+
         return titleMatch || descriptionMatch || priorityMatch;
       }).toList();
     });
@@ -210,34 +225,49 @@ Future<void> _loadUserTasks() async {
     });
   }
 
- void _onTaskToggle(Task task) async {
-  print('🔄 Toggling task ${task.id} from ${task.isCompleted} to ${!task.isCompleted}');
-  
-  // Try the PATCH method first (simpler)
-  final int safeId = int.tryParse(task.id.toString()) ?? 0;
-var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
-
-  
-  // If PATCH fails, try the full PUT method
-  if (result['success'] == false) {
-    print('🔄 PATCH failed, trying full update...');
-    result = await TaskService.toggleTaskCompletion(task.id, !task.isCompleted);
-  }
-
-  if (result['success'] == true) {
-    print('✅ Task toggled successfully');
-    await _loadUserTasks(); // Reload tasks from server
-  } else {
-    print('❌ Failed to toggle task: ${result['message']}');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result['message'] ?? 'Failed to update task'),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
+  void _onTaskToggle(Task task) async {
+    if (kDebugMode) {
+      print(
+      '🔄 Toggling task ${task.id} from ${task.isCompleted} to ${!task.isCompleted}',
     );
+    }
+
+    // Try the PATCH method first (simpler)
+    final int safeId = int.tryParse(task.id.toString()) ?? 0;
+    var result = await TaskService.toggleTaskCompletion(
+      safeId,
+      !task.isCompleted,
+    );
+
+    // If PATCH fails, try the full PUT method
+    if (result['success'] == false) {
+      if (kDebugMode) {
+        print('🔄 PATCH failed, trying full update...');
+      }
+      result = await TaskService.toggleTaskCompletion(
+        task.id,
+        !task.isCompleted,
+      );
+    }
+
+    if (result['success'] == true) {
+      if (kDebugMode) {
+        print('✅ Task toggled successfully');
+      }
+      await _loadUserTasks(); // Reload tasks from server
+    } else {
+      if (kDebugMode) {
+        print('❌ Failed to toggle task: ${result['message']}');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Failed to update task'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
-} 
 
   void _onTaskTap(Task task) {
     Navigator.push(
@@ -245,7 +275,8 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
       MaterialPageRoute(
         builder: (context) => TaskDetailScreen(
           task: task,
-         userId: int.tryParse(widget.user['id'].toString()) ?? widget.user['id'],
+          userId:
+              int.tryParse(widget.user['id'].toString()) ?? widget.user['id'],
 
           onTaskUpdated: _loadUserTasks,
         ),
@@ -259,7 +290,8 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
       MaterialPageRoute(
         builder: (context) => TaskDetailScreen(
           task: null,
-          userId: int.tryParse(widget.user['id'].toString()) ?? widget.user['id'],
+          userId:
+              int.tryParse(widget.user['id'].toString()) ?? widget.user['id'],
 
           onTaskUpdated: _loadUserTasks,
         ),
@@ -311,20 +343,18 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         decoration: BoxDecoration(
-          border: Border(
-            left: BorderSide(
-              color: priorityColor,
-              width: 4,
-            ),
-          ),
+          border: Border(left: BorderSide(color: priorityColor, width: 4)),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           leading: Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: task.isCompleted 
+              color: task.isCompleted
                   ? Colors.green.withValues(alpha: 0.1)
                   : Colors.grey.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -358,18 +388,20 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
                 task.description,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
               const SizedBox(height: 6),
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: _getPriorityColor(task.priority).withValues(alpha: 0.1),
+                      color: _getPriorityColor(
+                        task.priority,
+                      ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -389,11 +421,11 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    daysUntilDue == 0 
-                        ? 'Today' 
-                        : daysUntilDue == 1 
-                            ? 'Tomorrow' 
-                            : '$daysUntilDue days left',
+                    daysUntilDue == 0
+                        ? 'Today'
+                        : daysUntilDue == 1
+                        ? 'Tomorrow'
+                        : '$daysUntilDue days left',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -406,7 +438,10 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
           ),
           trailing: task.isCompleted
               ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -455,10 +490,7 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
               Container(
                 width: 8,
                 height: 8,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               const SizedBox(width: 12),
               Text(
@@ -601,7 +633,10 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
 
   Widget _buildSearchResults() {
     if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
-      return _buildEmptyState('No tasks found for "${_searchController.text}"', Icons.search_off);
+      return _buildEmptyState(
+        'No tasks found for "${_searchController.text}"',
+        Icons.search_off,
+      );
     }
 
     return ListView.builder(
@@ -614,9 +649,7 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
 
   Widget _buildNormalContent() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     switch (_currentIndex) {
@@ -628,14 +661,26 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  _buildStatsCard('Pending', _pendingTasks.length, 
-                      const Color(0xFFFFA502), Icons.pending_actions),
+                  _buildStatsCard(
+                    'Pending',
+                    _pendingTasks.length,
+                    const Color(0xFFFFA502),
+                    Icons.pending_actions,
+                  ),
                   const SizedBox(width: 12),
-                  _buildStatsCard('Completed', _completedTasks.length, 
-                      const Color(0xFF2ED573), Icons.check_circle),
+                  _buildStatsCard(
+                    'Completed',
+                    _completedTasks.length,
+                    const Color(0xFF2ED573),
+                    Icons.check_circle,
+                  ),
                   const SizedBox(width: 12),
-                  _buildStatsCard('High Priority', _highPriorityTasks.length, 
-                      const Color(0xFFFF4757), Icons.flag),
+                  _buildStatsCard(
+                    'High Priority',
+                    _highPriorityTasks.length,
+                    const Color(0xFFFF4757),
+                    Icons.flag,
+                  ),
                 ],
               ),
             ),
@@ -654,10 +699,7 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
                   const Spacer(),
                   Text(
                     '${_pendingTasks.length} pending',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                   ),
                 ],
               ),
@@ -676,10 +718,13 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
             ),
           ],
         );
-      
+
       case 1: // Completed Tasks Tab
         return _completedTasks.isEmpty
-            ? _buildEmptyState('No completed tasks yet', Icons.check_circle_outline)
+            ? _buildEmptyState(
+                'No completed tasks yet',
+                Icons.check_circle_outline,
+              )
             : Column(
                 children: [
                   Padding(
@@ -706,7 +751,7 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
                   ),
                 ],
               );
-      
+
       case 2: // Priorities Tab
         return Column(
           children: [
@@ -715,14 +760,26 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  _buildStatsCard('High', _highPriorityTasks.length, 
-                      const Color(0xFFFF4757), Icons.flag),
+                  _buildStatsCard(
+                    'High',
+                    _highPriorityTasks.length,
+                    const Color(0xFFFF4757),
+                    Icons.flag,
+                  ),
                   const SizedBox(width: 12),
-                  _buildStatsCard('Medium', _mediumPriorityTasks.length, 
-                      const Color(0xFFFFA502), Icons.outlined_flag),
+                  _buildStatsCard(
+                    'Medium',
+                    _mediumPriorityTasks.length,
+                    const Color(0xFFFFA502),
+                    Icons.outlined_flag,
+                  ),
                   const SizedBox(width: 12),
-                  _buildStatsCard('Low', _lowPriorityTasks.length, 
-                      const Color(0xFF2ED573), Icons.flag_outlined),
+                  _buildStatsCard(
+                    'Low',
+                    _lowPriorityTasks.length,
+                    const Color(0xFF2ED573),
+                    Icons.flag_outlined,
+                  ),
                 ],
               ),
             ),
@@ -732,15 +789,27 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
                   ? _buildEmptyState('No pending tasks', Icons.flag)
                   : ListView(
                       children: [
-                        _buildPrioritySection('High Priority', _highPriorityTasks, const Color(0xFFFF4757)),
-                        _buildPrioritySection('Medium Priority', _mediumPriorityTasks, const Color(0xFFFFA502)),
-                        _buildPrioritySection('Low Priority', _lowPriorityTasks, const Color(0xFF2ED573)),
+                        _buildPrioritySection(
+                          'High Priority',
+                          _highPriorityTasks,
+                          const Color(0xFFFF4757),
+                        ),
+                        _buildPrioritySection(
+                          'Medium Priority',
+                          _mediumPriorityTasks,
+                          const Color(0xFFFFA502),
+                        ),
+                        _buildPrioritySection(
+                          'Low Priority',
+                          _lowPriorityTasks,
+                          const Color(0xFF2ED573),
+                        ),
                       ],
                     ),
             ),
           ],
         );
-      
+
       default:
         return const SizedBox();
     }
@@ -767,10 +836,7 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
                 children: [
                   const Text(
                     'TaskPro',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 20,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
                   ),
                   const Spacer(),
                   IconButton(
@@ -786,10 +852,7 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
         centerTitle: false,
         actions: [
           if (_isSearching)
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: _clearSearch,
-            )
+            IconButton(icon: const Icon(Icons.close), onPressed: _clearSearch)
           else
             IconButton(
               icon: Container(
@@ -810,54 +873,60 @@ var result = await TaskService.toggleTaskCompletion(safeId, !task.isCompleted);
         ],
       ),
       body: _isSearching ? _buildSearchResults() : _buildNormalContent(),
-      floatingActionButton: _isSearching ? null : FloatingActionButton(
-        onPressed: _addNewTask,
-        backgroundColor: const Color(0xFF2D5AFF),
-        foregroundColor: Colors.white,
-        elevation: 4,
-        child: const Icon(Icons.add, size: 24),
-      ),
-      bottomNavigationBar: _isSearching ? null : Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+      floatingActionButton: _isSearching
+          ? null
+          : FloatingActionButton(
+              onPressed: _addNewTask,
+              backgroundColor: const Color(0xFF2D5AFF),
+              foregroundColor: Colors.white,
+              elevation: 4,
+              child: const Icon(Icons.add, size: 24),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
-            backgroundColor: Colors.white,
-            selectedItemColor: const Color(0xFF2D5AFF),
-            unselectedItemColor: Colors.grey.shade600,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-            type: BottomNavigationBarType.fixed,
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard),
-                label: 'Overview',
+      bottomNavigationBar: _isSearching
+          ? null
+          : Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.check_circle),
-                label: 'Completed',
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: BottomNavigationBar(
+                  currentIndex: _currentIndex,
+                  onTap: (index) => setState(() => _currentIndex = index),
+                  backgroundColor: Colors.white,
+                  selectedItemColor: const Color(0xFF2D5AFF),
+                  unselectedItemColor: Colors.grey.shade600,
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  type: BottomNavigationBarType.fixed,
+                  elevation: 0,
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.dashboard),
+                      label: 'Overview',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.check_circle),
+                      label: 'Completed',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.filter_alt),
+                      label: 'Priorities',
+                    ),
+                  ],
+                ),
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.filter_alt),
-                label: 'Priorities',
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 

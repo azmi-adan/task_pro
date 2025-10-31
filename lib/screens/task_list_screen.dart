@@ -1,5 +1,5 @@
-// lib/screens/task_list_screen.dart
 import 'package:flutter/material.dart';
+import 'package:learning_app/screens/home_screen.dart';
 import 'task_detail_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -23,7 +23,7 @@ class TaskListScreen extends StatefulWidget {
 class _TaskListScreenState extends State<TaskListScreen> {
   List<Task> get _filteredTasks {
     List<Task> filtered = widget.tasks;
-    
+
     // Apply search filter
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((task) {
@@ -31,12 +31,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
             task.description.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
-    
+
     // Apply priority filter
     if (_selectedPriority != null) {
-      filtered = filtered.where((task) => task.priority == _selectedPriority).toList();
+      filtered = filtered
+          .where((task) => task.priority == _selectedPriority)
+          .toList();
     }
-    
+
     return filtered;
   }
 
@@ -149,9 +151,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         });
       },
       backgroundColor: isSelected ? Colors.blue : Colors.grey.shade200,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black,
-      ),
+      labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
     );
   }
 
@@ -191,7 +191,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                decoration: task.isCompleted
+                    ? TextDecoration.lineThrough
+                    : null,
                 color: task.isCompleted ? Colors.grey : Colors.grey.shade600,
               ),
             ),
