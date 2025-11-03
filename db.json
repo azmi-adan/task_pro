@@ -43,11 +43,53 @@
       "createdAt": "2025-10-31T20:08:28.849"
     },
     {
-      "id": 7,
+      "id": "7",
       "email": "task@gmail.com",
       "password": "task@2006",
       "name": "task",
       "createdAt": "2025-10-31T21:10:46.333"
+    },
+    {
+      "id": "8",
+      "email": "test@gmail.com",
+      "password": "task@2006",
+      "name": "test",
+      "createdAt": "2025-10-31T21:25:37.829"
+    },
+    {
+      "id": 9,
+      "email": "joe@gmail.com",
+      "password": "Joe@2025",
+      "name": "Joe",
+      "createdAt": "2025-11-02T17:23:33.911"
+    },
+    {
+      "id": 10,
+      "email": "alice@gmail.com",
+      "password": "Alice@2025",
+      "name": "Alice",
+      "createdAt": "2025-11-02T17:26:10.799"
+    },
+    {
+      "id": 11,
+      "email": "jane@gmail.com",
+      "password": "Jane@2025",
+      "name": "jane",
+      "createdAt": "2025-11-02T17:30:52.785"
+    },
+    {
+      "id": 12,
+      "email": "david@gmail.com",
+      "password": "David@2025",
+      "name": "David",
+      "createdAt": "2025-11-02T17:34:37.457"
+    },
+    {
+      "id": 13,
+      "email": "mark@gmail.com",
+      "password": "Mark@2025",
+      "name": "Mark",
+      "createdAt": "2025-11-02T17:41:34.920"
     }
   ],
   "tasks": [
@@ -234,6 +276,53 @@
       "priority": "medium",
       "isCompleted": true,
       "createdAt": "2025-10-31T21:09:07.524"
+    },
+    {
+      "id": "26",
+      "userId": "9",
+      "title": "coding ",
+      "description": "coding in python",
+      "dueDate": "2025-11-07T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "createdAt": "2025-11-02T17:24:17.173"
+    },
+    {
+      "userId": 11,
+      "title": "coding",
+      "description": "coding java",
+      "dueDate": "2025-11-06T00:00:00.000",
+      "priority": "high",
+      "isCompleted": false,
+      "id": "27"
+    },
+    {
+      "userId": 12,
+      "title": "Coding ",
+      "description": "coding in java",
+      "dueDate": "2025-11-07T00:00:00.000",
+      "priority": "high",
+      "isCompleted": true,
+      "id": "28"
+    },
+    {
+      "id": "29",
+      "userId": "12",
+      "title": "Web design",
+      "description": "web design with css3",
+      "dueDate": "2025-11-10T00:00:00.000",
+      "priority": "medium",
+      "isCompleted": false,
+      "createdAt": "2025-11-02T17:35:46.472"
+    },
+    {
+      "userId": 13,
+      "title": "coding",
+      "description": "coding in python",
+      "dueDate": "2025-11-06T00:00:00.000",
+      "priority": "high",
+      "isCompleted": true,
+      "id": "30"
     }
   ]
 }
