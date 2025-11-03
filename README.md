@@ -290,11 +290,15 @@ Run `flutter pub get` after adding dependencies.
 *Detailed view of individual tasks with edit/delete options*
 
 ---
+signup screen 
+![signup screen](screenshots/signup_screen.png)
 
 ## 🏁 Week 4 Final Updates
 
 ### ✅ Key Improvements
 - Fixed all backend issues related to task ID type conflicts.
+- Resolved **Signup screen validation and form submission issue** to ensure smooth account creation.
+- Fixed **CRUD operation issues**, including editing, deleting, and marking tasks as complete.
 - Implemented stable CRUD functionality for tasks.
 - Enhanced UI consistency and navigation flow.
 - Added loading indicators and success/error feedback.
